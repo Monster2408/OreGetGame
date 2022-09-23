@@ -4,8 +4,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import xyz.mlserver.mc.util.CustomConfiguration;
+import xyz.mlserver.oregetgame.commands.game;
 import xyz.mlserver.oregetgame.listeners.BukkitUpdateInventoryEvent;
 import xyz.mlserver.oregetgame.utils.MainAPI;
+
+import java.util.Objects;
 
 public final class OreGetGame extends JavaPlugin {
 
@@ -18,21 +21,20 @@ public final class OreGetGame extends JavaPlugin {
         plugin = this;
 
         config = new CustomConfiguration(this);
+        config.saveDefaultConfig();
         msgConfig = new CustomConfiguration(this, "message.yml");
+        msgConfig.saveDefaultConfig();
 
         MainAPI.load();
 
-        scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-
         getServer().getPluginManager().registerEvents(new BukkitUpdateInventoryEvent(), this);
+        getCommand("game").setExecutor(new game());
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+        MainAPI.reset();
     }
 
-    public static JavaPlugin getPlugin() {
-        return plugin;
-    }
+    public static JavaPlugin getPlugin() { return plugin; }
 }

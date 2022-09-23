@@ -2,3 +2,12 @@ name: OreGetGame
 version: '${project.version}'
 main: xyz.mlserver.oregetgame.OreGetGame
 api-version: 1.18
+prefix: OGG
+authors: [ Monster2408 ]
+description: 鉱石を取得するサバイバルゲーム
+website: https://monster2408.com/
+
+commands:
+    game:
+        permission: oregetgame.admin
+        description: Main Command of OreGetGame

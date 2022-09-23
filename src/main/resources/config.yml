@@ -1,0 +1,11 @@
+
+goal: 100
+points:
+    coal: 1
+    iron: 3
+    gold: 5
+    diamond: 8
+    emerald: 9
+    lapis_lazuli: 2
+    redstone: 2
+    copper: 3

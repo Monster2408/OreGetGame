@@ -8,9 +8,12 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import xyz.mlserver.oregetgame.OreGetGame;
+
+import java.util.Objects;
 
 public class MainAPI {
 
@@ -44,60 +47,101 @@ public class MainAPI {
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.getInventory().clear();
         }
+        Bukkit.broadcastMessage(ChatColor.GOLD + "ゲームを開始しました。");
+
+        if (OreGetGame.scoreboard == null) OreGetGame.scoreboard = Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard();
+
+        if (OreGetGame.scoreboard.getObjective("sidebar") == null) {
+            sidebar = OreGetGame.scoreboard.registerNewObjective("sidebar","dummy", "points");
+        } else {
+            sidebar = OreGetGame.scoreboard.getObjective("sidebar");
+        }
+        bossBar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID);
+
+        updatePoint();
         return true;
     }
 
     public static boolean end() {
         if (!GameNow) return false;
         GameNow = false;
+        Bukkit.broadcastMessage(ChatColor.GOLD + "ゲームを終了しました。");
         return true;
     }
 
     public static void updatePoint() {
-        CoalPoint = 0;
-        IronPoint = 0;
-        GoldPoint = 0;
-        DiamondPoint = 0;
-        EmeraldPoint = 0;
-        CopperPoint = 0;
-        LapisLazuliPoint = 0;
-        RedstonePoint = 0;
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            for (ItemStack itemStack : player.getInventory()) {
-                switch (itemStack.getType()) {
-                    case COAL:
-                        CoalPoint+=CoalOptionPoint*itemStack.getAmount();
-                    case IRON_INGOT:
-                        IronPoint+=IronOptionPoint*itemStack.getAmount();
-                    case GOLD_INGOT:
-                        GoldPoint+=GoldOptionPoint*itemStack.getAmount();
-                    case DIAMOND:
-                        DiamondPoint+=DiamondOptionPoint*itemStack.getAmount();
-                    case EMERALD:
-                        EmeraldPoint+=EmeraldOptionPoint*itemStack.getAmount();
-                    case COPPER_INGOT:
-                        CopperPoint+=CopperOptionPoint*itemStack.getAmount();
-                    case LAPIS_LAZULI:
-                        LapisLazuliPoint+=LapisLazuliOptionPoint*itemStack.getAmount();
-                    case REDSTONE:
-                        RedstonePoint+=RedstoneOptionPoint*itemStack.getAmount();
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                CoalPoint = 0;
+                IronPoint = 0;
+                GoldPoint = 0;
+                DiamondPoint = 0;
+                EmeraldPoint = 0;
+                CopperPoint = 0;
+                LapisLazuliPoint = 0;
+                RedstonePoint = 0;
+                ItemStack itemStack;
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    for (int i = 0; i < 36; i++) {
+                        itemStack = player.getInventory().getItem(i);
+                        if (itemStack == null) continue;
+                        initPoint(itemStack);
+                    }
+                    initPoint(player.getInventory().getItemInOffHand());
+                }
+                AllPoint = CoalPoint+IronPoint+GoldPoint+DiamondPoint+EmeraldPoint+CopperPoint+LapisLazuliPoint+RedstonePoint;
+                updateSidebar();
+                updateBossbar();
+                if (GameNow && AllPoint >= GoalPoint) {
+                    GameNow = false;
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        player.sendTitle(ChatColor.YELLOW + "" + ChatColor.BOLD + "チャレンジ達成", "", 10, 70, 10);
+                        player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 20f, 0f);
+                    }
                 }
             }
-        }
-        AllPoint = CoalPoint+IronPoint+GoldPoint+DiamondPoint+EmeraldPoint+CopperPoint+LapisLazuliPoint+RedstonePoint;
-        updateSidebar();
-        updateBossbar();
-        if (GameNow && AllPoint >= GoalPoint) {
-            GameNow = false;
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                player.sendTitle(ChatColor.YELLOW + "" + ChatColor.BOLD + "チャレンジ達成", "", 10, 70, 10);
-                player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 20f, 0f);
-            }
+        }.runTaskLater(OreGetGame.getPlugin(), 2L);
+    }
+
+    private static void initPoint(ItemStack itemStack) {
+        switch (itemStack.getType()) {
+            case COAL:
+                CoalPoint+=CoalOptionPoint*itemStack.getAmount();
+                break;
+            case IRON_INGOT:
+                IronPoint+=IronOptionPoint*itemStack.getAmount();
+                break;
+            case GOLD_INGOT:
+                GoldPoint+=GoldOptionPoint*itemStack.getAmount();
+                break;
+            case DIAMOND:
+                DiamondPoint+=DiamondOptionPoint*itemStack.getAmount();
+                break;
+            case EMERALD:
+                EmeraldPoint+=EmeraldOptionPoint*itemStack.getAmount();
+                break;
+            case COPPER_INGOT:
+                CopperPoint+=CopperOptionPoint*itemStack.getAmount();
+                break;
+            case LAPIS_LAZULI:
+                LapisLazuliPoint+=LapisLazuliOptionPoint*itemStack.getAmount();
+                break;
+            case REDSTONE:
+                RedstonePoint+=RedstoneOptionPoint*itemStack.getAmount();
+                break;
         }
     }
 
+    public static void reset() {
+        if (sidebar != null) sidebar.unregister(); sidebar = null;
+        if (bossBar != null) bossBar.removeAll(); bossBar = null;
+        GameNow = false;
+    }
+
     private static void updateSidebar() {
-        sidebar = OreGetGame.scoreboard.registerNewObjective("sidebar","dummy", "points");
+        if (OreGetGame.scoreboard == null) OreGetGame.scoreboard = Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard();
+        if (sidebar == null) return;
         sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         sidebar.getScore("石炭" + "(" + CoalOptionPoint + "pt)").setScore(CoalPoint);
@@ -109,12 +153,18 @@ public class MainAPI {
         sidebar.getScore("レッドストーン" + "(" + RedstoneOptionPoint + "pt)").setScore(RedstonePoint);
         sidebar.getScore("銅インゴット" + "(" + CopperOptionPoint + "pt)").setScore(CopperPoint);
         sidebar.getScore("合計ポイント").setScore(AllPoint);
+
+        for (Player player : Bukkit.getOnlinePlayers()) player.setScoreboard(OreGetGame.scoreboard);
     }
 
     private static void updateBossbar() {
-        if (bossBar == null) bossBar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID);
+        if (bossBar == null) return;
         bossBar.setTitle("ポイント " + AllPoint + "/" + GoalPoint);
         for (Player player : Bukkit.getOnlinePlayers()) if (!bossBar.getPlayers().contains(player)) bossBar.addPlayer(player);
+    }
+
+    public static Objective getSidebar() {
+        return sidebar;
     }
 
 }

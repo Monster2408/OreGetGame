@@ -1,0 +1,4 @@
+name: OreGetGame
+version: '${project.version}'
+main: xyz.mlserver.oregetgame.OreGetGame
+api-version: 1.18

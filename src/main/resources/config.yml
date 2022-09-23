@@ -9,3 +9,10 @@ points:
     lapis_lazuli: 2
     redstone: 2
     copper: 3
+
+commands:
+    start:
+        - "/clear @a"
+    end:
+        - ""
+

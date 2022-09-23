@@ -14,6 +14,8 @@ import org.bukkit.scoreboard.Objective;
 import xyz.mlserver.mc.util.Color;
 import xyz.mlserver.oregetgame.OreGetGame;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class MainAPI {
@@ -27,6 +29,8 @@ public class MainAPI {
     private static String GameStartMsg, GameEndMsg, GameClearTitle, BossBarText;
 
     public static String StartDescription, EndDescription, ResetDescription, HelpDescription, IsGameNow, NotGameNow, SetPointDescription, PleaseSetPoint, WrongArgument, SetPoint;
+
+    private static List<String> startCmds, endCmds;
 
     private static Objective sidebar;
     private static BossBar bossBar;
@@ -79,15 +83,23 @@ public class MainAPI {
         PleaseSetPoint = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("Command.PleaseSetPoint", "&cポイントを設定してください。"));
         WrongArgument = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("Command.WrongArgument", "&c引数が間違えています。"));
         SetPoint = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("Command.SetPoint", "&6%%NAME%%のポイントを%%POINT%%ptに設定しました。"));
+
+        startCmds = new ArrayList<>();
+        endCmds = new ArrayList<>();
+        if (OreGetGame.config.getConfig().get("commands.start") != null) {
+            startCmds = OreGetGame.config.getConfig().getStringList("commands.start");
+        }
+        if (OreGetGame.config.getConfig().get("commands.end") != null) {
+            endCmds = OreGetGame.config.getConfig().getStringList("commands.end");
+        }
     }
 
     public static boolean start() {
         if (GameNow) return false;
         GameNow = true;
 
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            player.getInventory().clear();
-        }
+        if (startCmds.size() > 0) for (String cmd : startCmds) Bukkit.getScheduler().runTask(OreGetGame.getPlugin(), () -> Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd));
+
         Bukkit.broadcastMessage(ChatColor.GOLD + GameStartMsg);
 
         if (OreGetGame.scoreboard == null) OreGetGame.scoreboard = Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard();
@@ -106,6 +118,9 @@ public class MainAPI {
     public static boolean end() {
         if (!GameNow) return false;
         GameNow = false;
+
+        if (endCmds.size() > 0) for (String cmd : endCmds) Bukkit.getScheduler().runTask(OreGetGame.getPlugin(), () -> Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd));
+
         Bukkit.broadcastMessage(ChatColor.GOLD + GameEndMsg);
         return true;
     }

@@ -11,21 +11,27 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
+import xyz.mlserver.mc.util.Color;
 import xyz.mlserver.oregetgame.OreGetGame;
 
 import java.util.Objects;
 
 public class MainAPI {
 
-    private static int CoalOptionPoint, IronOptionPoint, GoldOptionPoint, DiamondOptionPoint, EmeraldOptionPoint, LapisLazuliOptionPoint, RedstoneOptionPoint, CopperOptionPoint;
+    public static int CoalOptionPoint, IronOptionPoint, GoldOptionPoint, DiamondOptionPoint, EmeraldOptionPoint, LapisLazuliOptionPoint, RedstoneOptionPoint, CopperOptionPoint;
 
     private static int CoalPoint, IronPoint, GoldPoint, DiamondPoint, EmeraldPoint, LapisLazuliPoint, RedstonePoint, CopperPoint, AllPoint;
-    private static int GoalPoint;
+    public static int GoalPoint;
+
+    public static String CoalPointName, IronPointName, GoldPointName, DiamondPointName, EmeraldPointName, LapisLazuliPointName, RedstonePointName, CopperPointName, AllPointName, ClearPointName;
+    private static String GameStartMsg, GameEndMsg, GameClearTitle, BossBarText;
+
+    public static String StartDescription, EndDescription, ResetDescription, HelpDescription, IsGameNow, NotGameNow, SetPointDescription, PleaseSetPoint, WrongArgument, SetPoint;
 
     private static Objective sidebar;
     private static BossBar bossBar;
 
-    private static boolean GameNow = false;
+    public static boolean GameNow = false;
 
     public static void load() {
         CoalOptionPoint = OreGetGame.config.getConfig().getInt("points.coal", 1);
@@ -38,6 +44,41 @@ public class MainAPI {
         CopperOptionPoint = OreGetGame.config.getConfig().getInt("points.copper", 3);
 
         GoalPoint = OreGetGame.config.getConfig().getInt("goal", 100);
+
+        CoalPointName =
+                OreGetGame.msgConfig.getConfig().getString("Sidebar.CoalName", "石炭");
+        IronPointName =
+                OreGetGame.msgConfig.getConfig().getString("Sidebar.IronIngotName", "鉄インゴット");
+        GoldPointName =
+                OreGetGame.msgConfig.getConfig().getString("Sidebar.GoldIngotName", "金インゴット");
+        CopperPointName =
+                OreGetGame.msgConfig.getConfig().getString("Sidebar.CopperName", "銅インゴット");
+        DiamondPointName =
+                OreGetGame.msgConfig.getConfig().getString("Sidebar.DiamondName", "ダイヤモンド");
+        EmeraldPointName =
+                OreGetGame.msgConfig.getConfig().getString("Sidebar.EmeraldName", "エメラルド");
+        LapisLazuliPointName =
+                OreGetGame.msgConfig.getConfig().getString("Sidebar.LapisLazuliName", "ラピスラズリ");
+        RedstonePointName =
+                OreGetGame.msgConfig.getConfig().getString("Sidebar.RedstoneName", "レッドストーン");
+        AllPointName =
+                OreGetGame.msgConfig.getConfig().getString("Sidebar.AllPointName", "● 合計ポイント ●");
+        GameStartMsg = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("GameStartMessage", "&6ゲームを開始しました。"));
+        GameEndMsg = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("GameEndMessage", "&6ゲームを終了しました。"));
+        GameClearTitle = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("GameClearTitle", "&e&lチャレンジ達成"));
+        BossBarText = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("BossBarText", "ポイント"));
+        ClearPointName = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("ClearPoint", "ゴールポイント"));
+
+        StartDescription = OreGetGame.msgConfig.getConfig().getString("Command.StartDescription", "開始コマンド");
+        EndDescription = OreGetGame.msgConfig.getConfig().getString("Command.EndDescription", "終了コマンド");
+        ResetDescription = OreGetGame.msgConfig.getConfig().getString("Command.ResetDescription", "初期化コマンド");
+        SetPointDescription = OreGetGame.msgConfig.getConfig().getString("Command.SetPointDescription", "ポイント設定コマンド");
+        HelpDescription = OreGetGame.msgConfig.getConfig().getString("Command.HelpDescription", "ヘルプコマンド");
+        IsGameNow = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("Command.IsGameNow", "&cゲーム中に実行できません。"));
+        NotGameNow = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("Command.NotGameNow", "&cゲームが開始されていません。"));
+        PleaseSetPoint = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("Command.PleaseSetPoint", "&cポイントを設定してください。"));
+        WrongArgument = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("Command.WrongArgument", "&c引数が間違えています。"));
+        SetPoint = Color.replaceColorCode(OreGetGame.msgConfig.getConfig().getString("Command.SetPoint", "&6%%NAME%%のポイントを%%POINT%%ptに設定しました。"));
     }
 
     public static boolean start() {
@@ -47,7 +88,7 @@ public class MainAPI {
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.getInventory().clear();
         }
-        Bukkit.broadcastMessage(ChatColor.GOLD + "ゲームを開始しました。");
+        Bukkit.broadcastMessage(ChatColor.GOLD + GameStartMsg);
 
         if (OreGetGame.scoreboard == null) OreGetGame.scoreboard = Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard();
 
@@ -65,7 +106,7 @@ public class MainAPI {
     public static boolean end() {
         if (!GameNow) return false;
         GameNow = false;
-        Bukkit.broadcastMessage(ChatColor.GOLD + "ゲームを終了しました。");
+        Bukkit.broadcastMessage(ChatColor.GOLD + GameEndMsg);
         return true;
     }
 
@@ -96,7 +137,7 @@ public class MainAPI {
                 if (GameNow && AllPoint >= GoalPoint) {
                     GameNow = false;
                     for (Player player : Bukkit.getOnlinePlayers()) {
-                        player.sendTitle(ChatColor.YELLOW + "" + ChatColor.BOLD + "チャレンジ達成", "", 10, 70, 10);
+                        player.sendTitle(GameClearTitle, "", 10, 70, 10);
                         player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 20f, 0f);
                     }
                 }
@@ -144,22 +185,22 @@ public class MainAPI {
         if (sidebar == null) return;
         sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-        sidebar.getScore("石炭" + "(" + CoalOptionPoint + "pt)").setScore(CoalPoint);
-        sidebar.getScore("鉄インゴット" + "(" + IronOptionPoint + "pt)").setScore(IronPoint);
-        sidebar.getScore("金インゴット" + "(" + GoldOptionPoint + "pt)").setScore(GoldPoint);
-        sidebar.getScore("ダイヤモンド" + "(" + DiamondOptionPoint + "pt)").setScore(DiamondPoint);
-        sidebar.getScore("エメラルド" + "(" + EmeraldOptionPoint + "pt)").setScore(EmeraldPoint);
-        sidebar.getScore("ラピスラズリ" + "(" + LapisLazuliOptionPoint + "pt)").setScore(LapisLazuliPoint);
-        sidebar.getScore("レッドストーン" + "(" + RedstoneOptionPoint + "pt)").setScore(RedstonePoint);
-        sidebar.getScore("銅インゴット" + "(" + CopperOptionPoint + "pt)").setScore(CopperPoint);
-        sidebar.getScore("合計ポイント").setScore(AllPoint);
+        sidebar.getScore(CoalPointName + "(" + CoalOptionPoint + "pt)").setScore(CoalPoint);
+        sidebar.getScore(IronPointName + "(" + IronOptionPoint + "pt)").setScore(IronPoint);
+        sidebar.getScore(GoldPointName + "(" + GoldOptionPoint + "pt)").setScore(GoldPoint);
+        sidebar.getScore(CopperPointName + "(" + CopperOptionPoint + "pt)").setScore(CopperPoint);
+        sidebar.getScore(DiamondPointName + "(" + DiamondOptionPoint + "pt)").setScore(DiamondPoint);
+        sidebar.getScore(EmeraldPointName + "(" + EmeraldOptionPoint + "pt)").setScore(EmeraldPoint);
+        sidebar.getScore(LapisLazuliPointName + "(" + LapisLazuliOptionPoint + "pt)").setScore(LapisLazuliPoint);
+        sidebar.getScore(RedstonePointName + "(" + RedstoneOptionPoint + "pt)").setScore(RedstonePoint);
+        sidebar.getScore(AllPointName).setScore(AllPoint);
 
         for (Player player : Bukkit.getOnlinePlayers()) player.setScoreboard(OreGetGame.scoreboard);
     }
 
     private static void updateBossbar() {
         if (bossBar == null) return;
-        bossBar.setTitle("ポイント " + AllPoint + "/" + GoalPoint);
+        bossBar.setTitle(BossBarText + " " + AllPoint + "/" + GoalPoint);
         for (Player player : Bukkit.getOnlinePlayers()) if (!bossBar.getPlayers().contains(player)) bossBar.addPlayer(player);
     }
 

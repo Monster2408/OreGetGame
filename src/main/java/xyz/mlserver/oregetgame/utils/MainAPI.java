@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
+import xyz.mlserver.java.Log;
 import xyz.mlserver.mc.util.Color;
 import xyz.mlserver.oregetgame.OreGetGame;
 
@@ -87,10 +88,16 @@ public class MainAPI {
         startCmds = new ArrayList<>();
         endCmds = new ArrayList<>();
         if (OreGetGame.config.getConfig().get("commands.start") != null) {
-            startCmds = OreGetGame.config.getConfig().getStringList("commands.start");
+            for (String cmd : OreGetGame.config.getConfig().getStringList("commands.start")) {
+                if (cmd.startsWith("/")) cmd = cmd.substring(1);
+                startCmds.add(cmd);
+            }
         }
         if (OreGetGame.config.getConfig().get("commands.end") != null) {
-            endCmds = OreGetGame.config.getConfig().getStringList("commands.end");
+            for (String cmd : OreGetGame.config.getConfig().getStringList("commands.end")) {
+                if (cmd.startsWith("/")) cmd = cmd.substring(1);
+                endCmds.add(cmd);
+            }
         }
     }
 
@@ -98,7 +105,8 @@ public class MainAPI {
         if (GameNow) return false;
         GameNow = true;
 
-        if (startCmds.size() > 0) for (String cmd : startCmds) Bukkit.getScheduler().runTask(OreGetGame.getPlugin(), () -> Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd));
+        Log.debug(startCmds.toString());
+        if (startCmds.size() > 0) for (String cmd : startCmds) Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
 
         Bukkit.broadcastMessage(ChatColor.GOLD + GameStartMsg);
 
@@ -119,7 +127,7 @@ public class MainAPI {
         if (!GameNow) return false;
         GameNow = false;
 
-        if (endCmds.size() > 0) for (String cmd : endCmds) Bukkit.getScheduler().runTask(OreGetGame.getPlugin(), () -> Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd));
+        if (endCmds.size() > 0) for (String cmd : endCmds) Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), cmd);
 
         Bukkit.broadcastMessage(ChatColor.GOLD + GameEndMsg);
         return true;

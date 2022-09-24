@@ -1,0 +1,29 @@
+#This is the english language file, set "language-file" in the config.yml to "lang-en.yml" to use this file!
+#You can see this site for all color codes ----> https://minecraft.tools/en/color-code.php
+# Help translate this file over on our Crowdin: https://crowdin.com/project/economyshopgui
+Sidebar:
+  CoalName: "石炭"
+  IronIngotName: "鉄インゴット"
+  GoldIngotName: "金インゴット"
+  CopperName: "銅インゴット"
+  DiamondName: "ダイヤモンド"
+  EmeraldName: "エメラルド"
+  LapisLazuliName: "ラピスラズリ"
+  RedstoneName: "レッドストーン"
+  AllPointName: "● 合計ポイント ●"
+GameStartMessage: "&6ゲームを開始しました。"
+GameEndMessage: "&6ゲームを終了しました。"
+GameClearTitle: "&e&lチャレンジ達成"
+BossBarText: "ポイント"
+ClearPoint: "ゴールポイント"
+Command:
+  StartDescription: "開始コマンド"
+  EndDescription: "終了コマンド"
+  ResetDescription: "初期化コマンド"
+  SetPointDescription: "ポイント設定コマンド"
+  HelpDescription: "ヘルプコマンド"
+  IsGameNow: "&cゲーム中に実行できません。"
+  NotGameNow: "&cゲームが開始されていません。"
+  PleaseSetPoint: "&cポイントを設定してください。"
+  WrongArgument: "&c引数が間違えています。"
+  SetPoint: "&6%NAME%のポイントを%POINT%ptに設定しました。"

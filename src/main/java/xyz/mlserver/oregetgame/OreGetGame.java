@@ -19,7 +19,8 @@ public final class OreGetGame extends JavaPlugin {
 
         config = new CustomConfiguration(this);
         config.saveDefaultConfig();
-        msgConfig = new CustomConfiguration(this, "message.yml");
+
+        msgConfig = new CustomConfiguration(this, "lang/" + config.getConfig().getString("language-file"));
         msgConfig.saveDefaultConfig();
 
         MainAPI.load();

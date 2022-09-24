@@ -1,4 +1,5 @@
-
+# language file is 'lang-ja.yml' or 'lang-en.yml'
+language-file: lang-ja.yml
 goal: 100
 points:
     coal: 1
@@ -12,7 +13,6 @@ points:
 
 commands:
     start:
-        - "/clear @a"
+        - "clear @a"
     end:
         - ""
-
